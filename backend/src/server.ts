@@ -36,10 +36,10 @@ const io: any = new Server(httpServer, {
 app.use("/api/auth", authRoutes);
 app.use("/api/products", authenticateToken, productRoute);
 app.use("/api/inventory", authenticateToken, inventoryRoute);
-app.get("/", (req, res) => {
-  res.send("WebSocket Server is running!");
-  return
-});
+// app.get("/", (req, res) => {
+//   res.send("WebSocket Server is running!");
+//   return
+// });
 // app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 httpServer.listen(PORT, () => {
   console.log(`Swagger docs at http://localhost:${PORT}`);
