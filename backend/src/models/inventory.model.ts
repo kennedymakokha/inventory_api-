@@ -10,6 +10,7 @@ const InventorySchema = new mongoose.Schema({
     type: Schema.Types.ObjectId,
     ref: 'product_tb'
   },
+  expiryDate: { type: Date, default: null },
   deletedAt: { type: Date, default: null }
 }, { timestamps: true });
 

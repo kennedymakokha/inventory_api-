@@ -30,7 +30,7 @@ export const Create = async (req: Request | any, res: Response): Promise<void> =
 };
 export const sync = async (req: Request | any, res: Response): Promise<void> => {
     try {
-
+        console.log(req.body)
         const { product_name, price, updatedAt, createdBy } = req.body;
         const existing = await ProductModel.findOne({ product_name, createdBy: req.user.userId });
 

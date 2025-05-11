@@ -1,14 +1,11 @@
 import { Router } from "express";
-import { Create, Get, GetUpdates, sync, Trash, Update } from "../controllers/product.controller";
+import { Create, Get, GetUpdates, sync, Trash, Update } from "../controllers/inventory.controller";
 
 const router = Router();
-
-
-
 router.get("/", Get);
 router.post("/", Create);
 router.get("/updates", GetUpdates);
-router.get("/sync", sync);
+router.post("/sync", sync);
 router.put("/:id", Update);
 router.delete("/:id", Trash);
 // router.get("/:id", Get_one);

@@ -8,6 +8,8 @@ import { validateInventoryInput } from "../validations/inventory.validations";
 export const Create = async (req: Request | any, res: Response): Promise<void> => {
     try {
         CustomError(validateInventoryInput, req.body, res)
+
+        console.log(req.body)
         const Exists: any = await Inventory.findOne({ _id: req.body.product });
         let qty = req.body.quantity
         req.body.createdBy = req.user.userId
@@ -43,7 +45,7 @@ export const sync = async (req: Request | any, res: Response): Promise<void> => 
                 await existing.save();
             }
         } else {
-            await Inventory.create({ product_id, quantity, updatedAt, createdBy: req.user.userId });
+            await Inventory.create(req.body);
         }
 
         res.status(200).send({ success: true });
@@ -81,6 +83,7 @@ export const Get = async (req: Request | any, res: Response | any) => {
 
 export const GetUpdates = async (req: Request | any, res: Response | any) => {
     const { since } = req.query;
+    console.log(since)
     try {
         const updated = await Inventory.find({
             updatedAt: { $gt: new Date(since as string) },
