@@ -23,9 +23,9 @@ const app = express();
 const httpServer = createServer(app);
 
 const allowedOrigins = [
-  "http://localhost:3000",
+  "http://localhost:9000",
   "https://marapesa.com",
-  "https://spingofrontend.vercel.app",
+  "https://smartshop-api.marapesa.com",
   "http://185.113.249.137:3000",
   "https://api.marapesa.com"
 ];
