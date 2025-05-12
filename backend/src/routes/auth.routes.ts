@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, login, logout, refresh, session_Check, updatePassword, activateuser, requestToken, verifyuser } from "../controllers/auth.controller";
+import { register, login, logout, refresh, session_Check, updatePassword, activateuser, requestToken, verifyuser, getUsers } from "../controllers/auth.controller";
 
 const router = Router();
 /**
@@ -32,6 +32,7 @@ router.post("/login", login);
  *         description: return logged in user
  */
 router.get("/", session_Check);
+router.get("/users", getUsers);
 router.post("/refresh", refresh);
 router.post("/reset-password", updatePassword);
 /**

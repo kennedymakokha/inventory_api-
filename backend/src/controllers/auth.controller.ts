@@ -36,6 +36,7 @@ export const register = async (req: Request, res: Response) => {
         }
 
         let activationcode = MakeActivationCode(4)
+        req.body.password = phone
         req.body.phone_number = phone
         req.body.activationCode = activationcode
         const user: any = new User(req.body);
@@ -65,6 +66,20 @@ export const updatePassword = async (req: Request, res: Response) => {
         user.password = newPassword
         await user.save();
         res.status(200).json({ success: true, message: "Password updated successfully" });
+        return;
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Server error", error });
+        return;
+
+    }
+}
+export const getUsers = async (req: Request, res: Response) => {
+    try {
+
+        const user: any = await User.find();  // Find the user by ID
+console.log(user)
+        res.status(200).json(user);
         return;
     } catch (error) {
         console.log(error)
@@ -174,7 +189,7 @@ export const login = async (req: Request, res: Response) => {
             res.status(400).json("User Not Found")
             return
         }
-       
+
         if (!userExists || !(await bcrypt.compare(password, userExists.password))) {
             res.status(401).json("Invalid credentials");
             return

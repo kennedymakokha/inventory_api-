@@ -1,0 +1,23 @@
+'use client'
+// app/dashboard/layout.tsx
+
+import Header from "../components/Header";
+import ProtectedRoute from "../components/ProtectedRoute";
+import Sidebar from "../components/Sidebar";
+
+
+import { ReactNode } from "react";
+
+export default function DashboardLayout({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar />
+      <div className="flex flex-col flex-1">
+        <Header />
+        <ProtectedRoute>
+          <main className="flex-1 overflow-y-auto p-4">{children}</main>
+        </ProtectedRoute>
+      </div>
+    </div>
+  );
+}
