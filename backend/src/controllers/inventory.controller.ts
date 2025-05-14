@@ -49,6 +49,7 @@ export const sync = async (req: Request | any, res: Response): Promise<void> => 
         }
 
         res.status(200).send({ success: true });
+        return
     } catch (err) {
         console.error(err);
         res.status(500).send({ error: 'Sync failed' });
@@ -72,7 +73,7 @@ export const Get = async (req: Request | any, res: Response | any) => {
                 totalPages: Math.ceil(total / limit)
             }
         );
-        return; return
+        return;
     } catch (error) {
         console.log(error)
         res.status(500).json({ ok: false, message: "Server error", error });
@@ -90,9 +91,11 @@ export const GetUpdates = async (req: Request | any, res: Response | any) => {
             createdBy: req.user.userId
         });
         res.status(200).json(updated);
+        return
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Fetch failed' });
+        return
     }
 };
 

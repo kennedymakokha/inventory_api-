@@ -9,6 +9,7 @@ import { connectDB } from "./config/db";
 import authRoutes from './routes/auth.routes';
 import productRoute from './routes/product.routes';
 import inventoryRoute from './routes/inventory.routes';
+import salesRoute from './routes/sales.route';
 import { authenticateToken } from "./middleware/auth.middleware";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -52,7 +53,7 @@ nextApp.prepare().then(() => {
   app.use("/api/auth", authRoutes);
   app.use("/api/products", authenticateToken, productRoute);
   app.use("/api/inventory", authenticateToken, inventoryRoute);
-
+  app.use("/api/sales", authenticateToken, salesRoute);
   app.all('*', (req, res) => {
     return handle(req, res);
   });

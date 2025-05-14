@@ -78,7 +78,7 @@ export const getUsers = async (req: Request, res: Response) => {
     try {
 
         const user: any = await User.find();  // Find the user by ID
-console.log(user)
+        console.log(user)
         res.status(200).json(user);
         return;
     } catch (error) {
@@ -195,7 +195,7 @@ export const login = async (req: Request, res: Response) => {
             return
         } else {
 
-            const { accessToken, refreshToken } = generateTokens(userExists);
+            const { accessToken, refreshToken } = generateTokens(userExists, "2hrs");
             const decoded = jwtDecode(accessToken);
 
             res.setHeader("Set-Cookie", serialize("sessionToken", accessToken, {
