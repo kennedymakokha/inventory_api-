@@ -78,6 +78,47 @@ export const Get = async (req: Request | any, res: Response | any) => {
 
     }
 };
+export const Bulk = async (req: Request | any, res: Response | any) => {
+    try {
+        const { products } = req.body;
+        const savedProducts = [];
+
+        for (let item of products) {
+            const { product_id } = item;
+            console.log("G", product_id)
+            const exists = await ProductModel.findById(product_id);
+            console.log("GES", exists)
+            if (exists) continue;
+            const newProduct = new ProductModel({
+                ...item,
+                synced: true,
+                created_at: new Date(item.createdAt),
+                updatedAt: new Date(item.updatedAt)
+            });
+            const saved = await newProduct.save();
+            savedProducts.push(saved);
+        }
+
+        res.status(200).json({ success: true, synced: savedProducts });
+    } catch (err: any) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+
+};
+
+export const UpdatedSince = async (req: Request | any, res: Response | any) => {
+    try {
+
+        const since = new Date(req.query.since);
+        const updated = await ProductModel.find({ updatedAt: { $gt: since } });
+
+        res.status(200).json(updated);
+    } catch (err: any) {
+        console.log(err)
+        res.status(500).json({ error: err.message });
+    }
+};
 
 export const GetUpdates = async (req: Request | any, res: Response | any) => {
     const { since } = req.query;

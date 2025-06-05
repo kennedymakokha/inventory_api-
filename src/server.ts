@@ -18,8 +18,7 @@ import next from 'next';
 import path from "path";
 
 const dev = process.env.NODE_ENV !== 'production';
-const nextApp = next({ dev, dir: './client' });
-const handle = nextApp.getRequestHandler();
+
 const app = express();
 const httpServer = createServer(app);
 
@@ -47,20 +46,20 @@ app.use(bodyParser.json());
 
 const PORT = Number(process.env.PORT) || 5000;
 
-nextApp.prepare().then(() => {
-  connectDB();
+connectDB();
 
-  app.use("/api/auth", authRoutes);
-  app.use("/api/products", authenticateToken, productRoute);
-  app.use("/api/inventory", authenticateToken, inventoryRoute);
-  app.use("/api/sales", authenticateToken, salesRoute);
-  app.all('*', (req, res) => {
-    return handle(req, res);
-  });
+app.use("/api/auth", authRoutes);
+app.use("/api/products", authenticateToken, productRoute);
+app.use("/api/inventory", authenticateToken, inventoryRoute);
+app.use("/api/sales", authenticateToken, salesRoute);
 
-  httpServer.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-  });
-
-  setupSocket(io);
+app.use('*', (req, res) => {
+  res.status(404).json({ message: 'API endpoint not found' });
 });
+
+httpServer.listen(PORT, () => {
+  console.log(`🚀 Backend server running on http://localhost:${PORT}`);
+});
+
+setupSocket(io);
+

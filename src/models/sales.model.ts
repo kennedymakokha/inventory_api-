@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const SalesSchema = new mongoose.Schema({
   quantity: { type: Number, },
+  soldprice: { type: Number, },
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'user_tb'
