@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.routes';
 import productRoute from './routes/product.routes';
 import inventoryRoute from './routes/inventory.routes';
 import salesRoute from './routes/sales.route';
+import categoryRoute from './routes/categories.routes';
 import { authenticateToken } from "./middleware/auth.middleware";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -52,6 +53,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", authenticateToken, productRoute);
 app.use("/api/inventory", authenticateToken, inventoryRoute);
 app.use("/api/sales", authenticateToken, salesRoute);
+app.use("/api/categories", authenticateToken, categoryRoute);
 
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'API endpoint not found' });
