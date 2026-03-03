@@ -9,8 +9,10 @@ import { ProductModel } from "../models/product.model";
 export const Create = async (req: Request | any, res: Response): Promise<void> => {
     try {
         // CustomError(validateInventoryInput, req.body, res)
-
-
+        const product = ProductModel.findOne({ product_id: req.body.product_id })
+        console.log(product)
+        return
+        console.log('REG', req.body)
         const Exists: any = await ProductModel.findOne({ _id: req.body.product_id });
         let qty = req.body.quantity
         req.body.createdBy = req.user.userId

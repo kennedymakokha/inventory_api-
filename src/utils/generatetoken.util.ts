@@ -10,13 +10,13 @@ interface UserPayload {
 }
 
 const generateTokens = (user: UserPayload, accessExpiry: string) => {
-    const jwtSecret = process.env.JWT_SECRET || "your_secret_key";
+    const jwtSecret = process.env.JWT_SECRET || "development_secret_key_change_in_prod";
     const refreshSecret = process.env.REFRESH_SECRET || "my_secret_key";
 
     const accessToken = jwt.sign(
         {
             userId: user._id,
-            username: user.username,
+            username: user.name,
             role: user.role,
             name: user.name,
         },

@@ -30,8 +30,26 @@ export interface ISms extends Document {
     timestamp: Date;
 
 }
+
+//  business_name: {  type: String, required: true },
+//   postal_address: {type: String},
+//   phone_number: {type: String},
+//   kra_pin: {type: String},
+//   expiryDate: { type: Date },
+//   active: { type: Boolean, default: false },
+//   created_at: { type: Date, default: Date.now },
+//   updatedAt: {  type: Date, default: Date.now },
+//   api_key: { type: String, },
+//   master_ke: { type: String,default: "k3f9Jq8sT1vQmZ0uLx7Y2pV+5A1bF4Hq0r9N2wT+6GQ=" },
 export type Business = {
     business_name: string;
+    phone_number: string;
+    postal_address?: string;
+    kra_pin?: string;
+    api_key?: string;
+    contact_number?: string;
+    master_ke?: string;
+    expirtyDate?: string;
     description: string;
     state: "active" | "inactive";
     deletedAt?: string;
@@ -47,7 +65,7 @@ export type Category = {
 export type Product = {
     product_name: string;
     price: number | any;
-    description?: string;  
+    description?: string;
     deletedAt?: string;
 };
 export type Inventory = {

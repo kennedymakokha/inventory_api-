@@ -17,14 +17,15 @@ import { MakeActivationCode } from "../utils/generate_activation.util";
 
 export const register = async (req: Request, res: Response) => {
     try {
-        const { username, password, phone_number } = req.body;
+        const { username, email, password, phone_number } = req.body;
 
         let phone = await Format_phone_number(phone_number); //format the phone number
         const userExists: any = await User.findOne(
             {
                 $or: [
-                    { username: phone_number },
-                    { phone_number: phone }
+                    { name: phone_number },
+                    { phone_number: phone },
+                    { email: email },
                 ],
 
             }
@@ -175,27 +176,27 @@ export const login = async (req: Request, res: Response) => {
             return
         };
         const { phone_number, password } = req.body;
-        console.log(phone_number, password)
-        let phone = await Format_phone_number(phone_number); //format the phone number
 
+        let phone = await Format_phone_number(phone_number); //format the phone number
+       
         const userExists: any = await User.findOne({
             $or: [
-                { username: phone_number },
+                { phone_number: phone_number },
                 { phone_number: phone }
             ]
-        }).select("phone_number username role activated password");
+        }).select("phone_number name username role activated password business").populate('business','business_name postal_address phone_number contact_number kra_pin api_key');
 
         if (!userExists) {
             res.status(400).json("User Not Found")
             return
         }
 
-        if (!userExists || !(await bcrypt.compare(password, userExists.password))) {
+        if (!(await bcrypt.compare(password, userExists.password))) {
             res.status(401).json("Invalid credentials");
             return
         } else {
 
-            const { accessToken, refreshToken } = generateTokens(userExists, "2hrs");
+            const { accessToken, refreshToken } = generateTokens(userExists, "7d");
             const decoded = jwtDecode(accessToken);
 
             res.setHeader("Set-Cookie", serialize("sessionToken", accessToken, {

@@ -24,6 +24,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
         next();
         return
     } catch (err) {
+        console.log(err)
         res.status(403).json({ message: "Invalid token" });
         return
     }
