@@ -28,30 +28,7 @@ export const Create = async (req: Request | any, res: Response): Promise<void> =
 
     }
 };
-export const sync = async (req: Request | any, res: Response): Promise<void> => {
-    try {
 
-        const { category_name, price, updatedAt, createdBy } = req.body;
-        const existing = await categoryModel.findOne({ category_name, createdBy: req.user.userId });
-
-        if (existing) {
-            // Update only if newer
-            if (new Date(updatedAt) > new Date(existing.updatedAt)) {
-              
-                existing.updatedAt = updatedAt;
-                await existing.save();
-            }
-        } else {
-            let v = await categoryModel.create({ category_name, updatedAt, createdBy });
-        }
-
-        res.status(200).send({ success: true });
-        return
-    } catch (err) {
-        console.error(err);
-        res.status(500).send({ success: true, error: 'Sync failed' });
-    }
-};
 export const Get = async (req: Request | any, res: Response | any) => {
 
     try {
@@ -81,39 +58,57 @@ export const Get = async (req: Request | any, res: Response | any) => {
 export const Bulk = async (req: Request | any, res: Response | any) => {
     try {
         const { categories } = req.body;
-        const savedcategories = [];
+        const savedcategories: any[] = [];
 
-        for (let item of categories) {
+        for (const item of categories) {
             const { category_id } = item;
-            console.log("G", category_id)
-            const exists = await categoryModel.findById(category_id);
-            console.log("GES", exists)
-            if (exists) continue;
-            const newProduct = new categoryModel({
-                ...item,
-                synced: true,
-                created_at: new Date(item.createdAt),
-                updatedAt: new Date(item.updatedAt)
-            });
-            const saved = await newProduct.save();
-            savedcategories.push(saved);
+
+            const existing: any = await categoryModel.findOne({ category_id });
+
+            if (!existing) {
+                // CREATE
+                const newCategory = new categoryModel({
+                    ...item,
+                    deleted_at: item.deleted_at ? new Date(item.deleted_at) : null
+                });
+
+                const saved = await newCategory.save();
+                savedcategories.push(saved);
+                continue;
+            }
+
+            // UPDATE
+            existing.category_name = item.category_name ?? existing.category_name;
+            existing.description = item.description ?? existing.description;
+
+            // 🔴 IMPORTANT: handle soft delete
+            if (item.deleted_at !== undefined) {
+                existing.deleted_at = item.deleted_at
+                    ? new Date(item.deleted_at)
+                    : null;
+            }
+
+            await existing.save();
+            savedcategories.push(existing);
         }
 
-        res.status(200).json({ success: true, synced: savedcategories });
+        res.status(200).json({
+            success: true,
+            categories: savedcategories
+        });
+
     } catch (err: any) {
         console.log(err);
         res.status(500).json({ error: err.message });
     }
-
 };
-
 export const UpdatedSince = async (req: Request | any, res: Response | any) => {
     try {
 
         const since = new Date(req.query.since);
-        const updated = await categoryModel.find({ updatedAt: { $gt: since } });
+        const categories = await categoryModel.find({ updatedAt: { $gt: since }, business: req.user.business });
 
-        res.status(200).json(updated);
+        res.status(200).json({ categories: categories });
     } catch (err: any) {
         console.log(err)
         res.status(500).json({ error: err.message });

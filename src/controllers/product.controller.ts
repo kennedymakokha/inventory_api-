@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { CustomError } from "../utils/custom_error.util";
 import { validateProductInput } from "../validations/product.validations";
 import { ProductModel } from "../models/product.model";
+import { categoryModel } from "../models/category.model";
 
 
 export const Create = async (req: Request | any, res: Response): Promise<void> => {
@@ -28,30 +29,7 @@ export const Create = async (req: Request | any, res: Response): Promise<void> =
 
     }
 };
-export const sync = async (req: Request | any, res: Response): Promise<void> => {
-    try {
 
-        const { product_name, price, updatedAt, createdBy } = req.body;
-        const existing = await ProductModel.findOne({ product_name, createdBy: req.user.userId });
-
-        if (existing) {
-            // Update only if newer
-            if (new Date(updatedAt) > new Date(existing.updatedAt)) {
-                existing.price = price;
-                existing.updatedAt = updatedAt;
-                await existing.save();
-            }
-        } else {
-            let v = await ProductModel.create({ product_name, price, updatedAt, createdBy });
-        }
-
-        res.status(200).send({ success: true });
-        return
-    } catch (err) {
-        console.error(err);
-        res.status(500).send({ success: true, error: 'Sync failed' });
-    }
-};
 export const Get = async (req: Request | any, res: Response | any) => {
 
     try {
@@ -81,16 +59,18 @@ export const Get = async (req: Request | any, res: Response | any) => {
 export const Bulk = async (req: Request | any, res: Response | any) => {
     try {
         const { products } = req.body;
+        console.log(products[0])
         const savedProducts = [];
 
         for (let item of products) {
-            const { product_id } = item;
-            console.log("G", product_id)
-            const exists = await ProductModel.findById(product_id);
-            console.log("GES", exists)
+            const { product_id, category_tb } = item;
+            const category: any = await categoryModel.findOne({ category_tb });
+
+            const exists = await ProductModel.findOne({ product_id });
             if (exists) continue;
             const newProduct = new ProductModel({
                 ...item,
+                category: category._id,
                 synced: true,
                 created_at: new Date(item.createdAt),
                 updatedAt: new Date(item.updatedAt)
@@ -109,11 +89,11 @@ export const Bulk = async (req: Request | any, res: Response | any) => {
 
 export const UpdatedSince = async (req: Request | any, res: Response | any) => {
     try {
-
+        console.log("updated", req.query.since)
         const since = new Date(req.query.since);
-        const updated = await ProductModel.find({ updatedAt: { $gt: since } });
+        const updated = await ProductModel.find({ updatedAt: { $gt: since }, business: req.user.business });
 
-        res.status(200).json(updated);
+        res.status(200).json({ products: updated });
     } catch (err: any) {
         console.log(err)
         res.status(500).json({ error: err.message });
@@ -132,7 +112,7 @@ export const GetUpdates = async (req: Request | any, res: Response | any) => {
             createdBy: req.user.userId,
             updatedAt: { $gt: sinceDate }
         });
-        res.status(200).json(updated);
+        res.status(200).json({ products: updated });
         return
     } catch (err) {
         console.error(err);

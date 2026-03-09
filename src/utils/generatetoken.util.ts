@@ -7,6 +7,7 @@ interface UserPayload {
     username: string;
     role: string;
     name: string;
+    business: { _id: string };
 }
 
 const generateTokens = (user: UserPayload, accessExpiry: string) => {
@@ -19,6 +20,7 @@ const generateTokens = (user: UserPayload, accessExpiry: string) => {
             username: user.name,
             role: user.role,
             name: user.name,
+            business: user.business._id
         },
         jwtSecret,
         { expiresIn: accessExpiry }

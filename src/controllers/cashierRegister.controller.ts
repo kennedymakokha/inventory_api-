@@ -1,28 +1,31 @@
 
 import { Request, Response } from "express";
-import { Sales } from "../models/sales.model";
 
+import { CashierRegisterModel } from "../models/cashierRegister.model";
+//  sale_id TEXT,
+//               method TEXT,
+//               amount REAL,
 export const Bulk = async (req: Request | any, res: Response | any) => {
     try {
-        const { sales } = req.body;
-        const savedsales: any[] = [];
+        const { registrations } = req.body;
+        const savedRegistration: any[] = [];
 
-        for (const item of sales) {
-          
+        for (const item of registrations) {
+
             // CREATE
-            const newSale = new Sales({
+            const newRegistration = new CashierRegisterModel({
                 ...item,
                 business: req.user.business
 
             });
-            const saved = await newSale.save();
-            savedsales.push(saved);
+            const saved = await newRegistration.save();
+            savedRegistration.push(saved);
             continue;
         }
 
         res.status(200).json({
             success: true,
-            sales: savedsales
+            registrations: savedRegistration
         });
 
     } catch (err: any) {
@@ -34,9 +37,9 @@ export const UpdatedSince = async (req: Request | any, res: Response | any) => {
     try {
 
         const since = new Date(req.query.since);
-        const sales = await Sales.find({ updatedAt: { $gt: since }, business: req.user.business });
+        const registrations = await CashierRegisterModel.find({ updatedAt: { $gt: since }, business: req.user.business });
 
-        res.status(200).json({ sales: sales });
+        res.status(200).json({ registrations: registrations });
     } catch (err: any) {
         console.log(err)
         res.status(500).json({ error: err.message });

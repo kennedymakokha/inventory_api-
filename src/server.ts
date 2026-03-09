@@ -8,10 +8,15 @@ import { setupSocket } from './config/socket';
 import { connectDB } from "./config/db";
 import authRoutes from './routes/auth.routes';
 import productRoute from './routes/product.routes';
-import inventoryRoute from './routes/inventory.routes';
 import salesRoute from './routes/sales.route';
 import categoryRoute from './routes/categories.routes';
 import businessRoute from './routes/business.routes';
+import inventoryLogsRoute from './routes/inventoryLogs.routes';
+import PaymentRoute from './routes/payments.route'
+import RefundRoute from './routes/refunds.route'
+import RefundItemRoute from './routes/refundItems.route'
+import SaleItemRoute from './routes/saleItems.route'
+import CashRoute from './routes/cashierRegistrations.route'
 import { authenticateToken } from "./middleware/auth.middleware";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -52,11 +57,15 @@ connectDB();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", authenticateToken, productRoute);
-app.use("/api/inventory", authenticateToken, inventoryRoute);
 app.use("/api/sales", authenticateToken, salesRoute);
 app.use("/api/categories", authenticateToken, categoryRoute);
 app.use("/api/business", authenticateToken, businessRoute);
-
+app.use("/api/inventory-logs", authenticateToken, inventoryLogsRoute);
+app.use("/api/cash-registrations", authenticateToken, CashRoute);
+app.use("/api/payments", authenticateToken, PaymentRoute);
+app.use("/api/refunds", authenticateToken, RefundRoute);
+app.use("/api/refund-items", authenticateToken, RefundItemRoute);
+app.use("/api/sales-items", authenticateToken, SaleItemRoute);
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'API endpoint not found' });
 });

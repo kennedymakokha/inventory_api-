@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Bulk, UpdatedSince, } from "../controllers/sales.controller";
+import { Bulk, UpdatedSince, } from "../controllers/payments.controller";
 
 const router = Router();
 
