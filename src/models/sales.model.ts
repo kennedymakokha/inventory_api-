@@ -5,7 +5,7 @@ const SalesSchema = new mongoose.Schema(
     sale_id: {
       type: String,
       required: true,
-      
+
     },
 
     receipt_number: {
@@ -21,13 +21,16 @@ const SalesSchema = new mongoose.Schema(
       type: String, // 👈 CHANGE THIS TOO
       required: true,
     },
+    created_at: { type: String, required: true, },
     business: {
       type: Schema.Types.ObjectId,
       ref: 'business_tb'
     },
     deletedAt: { type: Date, default: null },
+    updatedAt: { type: Date, default: null },
+
   },
-  
+
 );
 
 export const Sales = mongoose.model("sales_tb", SalesSchema);

@@ -14,7 +14,7 @@ const PaymentSchema = new mongoose.Schema({
   method: String,
   amount: Number,
   created_at: Date,
-  updatedAt: Date,
+    updatedAt: { type: Date, default: new Date().toISOString() },
  
   business: {
     type: Schema.Types.ObjectId,

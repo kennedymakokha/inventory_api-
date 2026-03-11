@@ -71,7 +71,6 @@ export const Bulk = async (req: Request | any, res: Response | any) => {
 };
 export const UpdatedSince = async (req: Request | any, res: Response | any) => {
     try {
-
         const since = new Date(req.query.since);
         const inventories = await InventoryLog.find({ updatedAt: { $gt: since }, business: req.user.business });
 

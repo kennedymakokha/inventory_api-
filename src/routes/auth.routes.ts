@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { register, login, logout, refresh, session_Check, updatePassword, activateuser, requestToken, verifyuser, getUsers } from "../controllers/auth.controller";
+import { register, login, logout, refresh, session_Check, updatePassword, activateuser, requestToken, verifyuser, getUsers, Bulk, UpdatedSince } from "../controllers/auth.controller";
+import { authenticateToken } from "../middleware/auth.middleware";
 
 const router = Router();
 /**
@@ -57,7 +58,8 @@ router.post("/activate-user", activateuser);
 router.post("/verify-otp", verifyuser);
 router.post("/request-otp", requestToken);
 router.post("/logout", logout);
-
+router.post("/bulk", authenticateToken, Bulk);
+router.get("/updated-since", authenticateToken, UpdatedSince);
 
 
 export default router;

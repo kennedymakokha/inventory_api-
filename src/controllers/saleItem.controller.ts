@@ -12,6 +12,9 @@ export const Bulk = async (req: Request | any, res: Response | any) => {
         const savedRegistration: any[] = [];
 
         for (const item of sales) {
+            console.log("---------before----------------")
+            console.log(item)
+            console.log("---------before----------------")
             const { product_id, sale_id } = item;
             const product: any = await ProductModel.findOne({ product_id });
             const sale: any = await Sales.findOne({ sale_id });
@@ -43,7 +46,7 @@ export const UpdatedSince = async (req: Request | any, res: Response | any) => {
 
         const since = new Date(req.query.since);
         const sales = await SaleItemModel.find({ updatedAt: { $gt: since }, business: req.user.business });
-
+       
         res.status(200).json({ sales: sales });
     } catch (err: any) {
         console.log(err)

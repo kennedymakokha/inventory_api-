@@ -22,7 +22,7 @@ const RefundSchema = new mongoose.Schema({
   quantity: Number,
   synced: Boolean,
   created_at: Date,
-  updatedAt: Date,
+  updatedAt: { type: Date, default: new Date().toISOString() },
 
   business: {
     type: Schema.Types.ObjectId,
@@ -33,7 +33,7 @@ const RefundSchema = new mongoose.Schema({
     type: Schema.Types.ObjectId,
     ref: 'user_tb'
   },
-}, );
+},);
 
 
 export const RefundItemModel = mongoose.model("RefundItem_tb", RefundSchema);

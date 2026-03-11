@@ -8,7 +8,7 @@ export const Bulk = async (req: Request | any, res: Response | any) => {
         const savedsales: any[] = [];
 
         for (const item of sales) {
-          
+
             // CREATE
             const newSale = new Sales({
                 ...item,
@@ -32,7 +32,7 @@ export const Bulk = async (req: Request | any, res: Response | any) => {
 };
 export const UpdatedSince = async (req: Request | any, res: Response | any) => {
     try {
-
+      
         const since = new Date(req.query.since);
         const sales = await Sales.find({ updatedAt: { $gt: since }, business: req.user.business });
 

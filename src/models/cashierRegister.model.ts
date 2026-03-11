@@ -17,6 +17,7 @@ const CashierRegisterSchema = new mongoose.Schema(
     closed_at: String,
     status: String,
     synced: Boolean,
+    updatedAt: { type: Date, default: new Date().toISOString() },
     createdBy: {
       type: String, // 👈 CHANGE THIS TOO
       required: true,

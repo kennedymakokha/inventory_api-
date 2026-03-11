@@ -35,9 +35,11 @@ export const register = async (req: Request, res: Response) => {
             res.status(400).json("User already exists")
             return
         }
+        const salt = await bcrypt.genSalt(10);
 
+        req.body.password = await bcrypt.hash(req.body.phone_number, salt);
         let activationcode = MakeActivationCode(4)
-        req.body.password = phone
+
         req.body.phone_number = phone
         req.body.activationCode = activationcode
         const user: any = new User(req.body);
@@ -178,13 +180,13 @@ export const login = async (req: Request, res: Response) => {
         const { phone_number, password } = req.body;
 
         let phone = await Format_phone_number(phone_number); //format the phone number
-       
+
         const userExists: any = await User.findOne({
             $or: [
                 { phone_number: phone_number },
                 { phone_number: phone }
             ]
-        }).select("phone_number name username role activated password business").populate('business','business_name postal_address phone_number contact_number kra_pin api_key');
+        }).select("phone_number name username role activated password business").populate('business', 'business_name postal_address phone_number contact_number kra_pin api_key');
 
         if (!userExists) {
             res.status(400).json("User Not Found")
@@ -236,6 +238,77 @@ export const session_Check = async (req: Request, res: Response) => {
         res.status(401).json({ ok: "false", message: "Invalid token" });
     }
 }
+
+export const Bulk = async (req: Request, res: Response): Promise<void> => {
+    try {
+       
+        const { users } = req.body;
+      
+        if (!users || !Array.isArray(users)) {
+            res.status(400).json({
+                success: false,
+                message: "Users array is required"
+            });
+            return;
+        }
+
+        const savedRegistration: any[] = [];
+
+        for (const item of users) {
+            const { phone_number, business_id } = item;
+
+            const phone = await Format_phone_number(phone_number);
+
+            const userExists = await User.findOne({
+                phone_number: phone,
+                business: business_id
+            });
+
+            if (userExists) continue;
+
+            const activationCode = MakeActivationCode(4);
+
+            const salt = await bcrypt.genSalt(10);
+            const passwordEncrypt = await bcrypt.hash(phone, salt);
+
+            const newUser = new User({
+                ...item,
+                business: business_id,
+                password: passwordEncrypt,
+                phone_number: phone,
+                activationCode
+            });
+
+            const saved = await newUser.save();
+            savedRegistration.push(saved);
+        }
+
+        res.status(200).json({
+            success: true,
+            total_created: savedRegistration.length,
+            users: savedRegistration
+        });
+
+    } catch (err: any) {
+        console.error(err);
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+export const UpdatedSince = async (req: Request | any, res: Response | any) => {
+    try {
+
+        const since = new Date(req.query.since);
+        const users = await User.find({ updatedAt: { $gt: since }, business: req.user.business });
+
+        res.status(200).json({ users: users });
+    } catch (err: any) {
+        console.log(err)
+        res.status(500).json({ error: err.message });
+    }
+};
 
 export const refresh = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;

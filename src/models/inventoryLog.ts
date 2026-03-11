@@ -13,8 +13,8 @@ const InventoryLogScema = new mongoose.Schema({
   },
   note: String,
   synced: Boolean,
-  created_at: Date,
-  updatedAt: Date,
+  createdAt: Date,
+  updatedAt: { type: Date, default: new Date().toISOString() },
   reference_id: String,
   reference_type: {
     type: String,

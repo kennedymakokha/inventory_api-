@@ -20,7 +20,7 @@ const RefundSchema = new mongoose.Schema({
   total_refund: Number,
   synced: Boolean,
   created_at: Date,
-  updatedAt: Date,
+   updatedAt: { type: Date, default: new Date().toISOString() },
 
   business: {
     type: Schema.Types.ObjectId,

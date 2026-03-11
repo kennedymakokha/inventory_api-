@@ -5,7 +5,7 @@ const categoryScema = new mongoose.Schema({
   category_id: String,
   description: String,
   created_at: Date,
-  updatedAt: Date,
+    updatedAt: { type: Date, default: new Date().toISOString() },
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'user_tb'

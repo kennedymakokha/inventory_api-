@@ -5,20 +5,20 @@ const productScema = new mongoose.Schema({
   product_id: String,
   price: Number,
   Bprice: Number,
-  stock:Number,
+  stock: Number,
   description: String,
   expiryDate: Date,
   synced: Boolean,
   created_at: Date,
-  updatedAt: Date,
-  category_id:String,
+  updatedAt: { type: Date, default: new Date().toISOString() },
+  category_id: String,
   quantity: { type: Number, },
   sellingPrice: { type: Number },
   business: {
     type: Schema.Types.ObjectId,
     ref: 'business_tb'
   },
-   category: {
+  category: {
     type: Schema.Types.ObjectId,
     ref: 'category_tb'
   },

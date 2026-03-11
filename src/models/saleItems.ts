@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
- 
+
 const SaleItemSchema = new mongoose.Schema({
   sale_item_id: {
     type: String,
@@ -22,7 +22,7 @@ const SaleItemSchema = new mongoose.Schema({
   quantity: Number,
   synced: Boolean,
   created_at: Date,
-  updatedAt: Date,
+  updatedAt: { type: Date, default: new Date().toISOString() },
 
   business: {
     type: Schema.Types.ObjectId,
@@ -33,7 +33,7 @@ const SaleItemSchema = new mongoose.Schema({
     type: Schema.Types.ObjectId,
     ref: 'user_tb'
   },
-}, );
+},);
 
 
 export const SaleItemModel = mongoose.model("SaleItem_tb", SaleItemSchema);
