@@ -76,9 +76,7 @@ export const Get = async (req: Request | any, res: Response | any) => {
 
 export const Get_one = async (req: Request | any, res: Response | any) => {
     try {
-        const { id } = req.query;
-
-        const business_obj: any = await BusinessModel.findById(id)
+        const business_obj: any = await BusinessModel.findById(req.user.business)
         res.status(201).json(business_obj);
         return;
     } catch (error) {
@@ -89,7 +87,7 @@ export const Get_one = async (req: Request | any, res: Response | any) => {
     }
 };
 
-export const Update = async (req: Request | any, res: Response | any) => {
+export const Update:any = async (req: Request | any, res: Response | any) => {
     try {
         let updates: any = await BusinessModel.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true, useFindAndModify: false })
         res.status(200).json(updates._id)

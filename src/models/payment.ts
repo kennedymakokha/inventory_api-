@@ -20,7 +20,6 @@ const PaymentSchema = new mongoose.Schema({
     type: Schema.Types.ObjectId,
     ref: 'business_tb'
   },
-
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'user_tb'

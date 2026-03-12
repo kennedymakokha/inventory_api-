@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, login, logout, refresh, session_Check, updatePassword, activateuser, requestToken, verifyuser, getUsers, Bulk, UpdatedSince } from "../controllers/auth.controller";
+import { register, login, logout, refresh, session_Check, updatePassword, activateuser, requestToken, verifyuser, getUsers, Bulk, UpdatedSince, getUser, Update } from "../controllers/auth.controller";
 import { authenticateToken } from "../middleware/auth.middleware";
 
 const router = Router();
@@ -55,6 +55,8 @@ router.post("/reset-password", updatePassword);
  *         description: User not found
  */
 router.post("/activate-user", activateuser);
+router.get("/active-user", getUser);
+router.put("/:id", Update);
 router.post("/verify-otp", verifyuser);
 router.post("/request-otp", requestToken);
 router.post("/logout", logout);

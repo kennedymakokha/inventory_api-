@@ -10,6 +10,7 @@ import generateTokens from "../utils/generatetoken.util";
 import { parse } from "cookie";
 import { jwtDecode } from "jwt-decode";
 import { MakeActivationCode } from "../utils/generate_activation.util";
+import { sendTextMessage } from "../utils/sms_sender.util";
 
 
 
@@ -91,6 +92,67 @@ export const getUsers = async (req: Request, res: Response) => {
 
     }
 }
+
+export const Update: any = async (req: Request | any, res: Response | any) => {
+    try {
+        let updates: any = await User.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true, useFindAndModify: false })
+        res.status(200).json(updates._id)
+        return
+    } catch (error) {
+        console.log(error)
+        res.status(400).json(error)
+        return
+    }
+};
+export const getUser = async (req: Request | any, res: Response | any) => {
+    try {
+        let user
+        if (req?.user?.userId) {
+            user = await User.findById(req.user.userId);
+            console.log(user)
+            res.status(200).json(user);
+        }
+
+        return;
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Server error", error });
+        return;
+
+    }
+}
+
+export const requestToken = async (req: Request, res: Response) => {
+    try {
+
+        const { phone_number } = req.body
+        let phone = await Format_phone_number(phone_number);
+
+        const user: any = await User.findOne({ phone_number: phone });  // Find the user by ID
+        if (!user) {
+            console.log("User Not Found")
+            res.status(400).json("user not found");
+            return
+        }
+
+        let activationcode = MakeActivationCode(4)
+        user.activationCode = activationcode
+        await user.save();
+        await sendTextMessage(
+            `Hi ${user.name} \nWelcome to Marapesa\nYour your activation Code is ${activationcode}`,
+            `${phone}`,
+            user._id,
+            "account-activation"
+        )
+        res.status(200).json(`Token sent to ***********${phone.slice(-3)}`);
+        return;
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Server error", error });
+        return;
+
+    }
+}
 export const activateuser = async (req: Request, res: Response) => {
     try {
         const { phone_number, code } = req.body
@@ -145,29 +207,7 @@ export const verifyuser = async (req: Request, res: Response) => {
 
     }
 }
-export const requestToken = async (req: Request, res: Response) => {
-    try {
 
-        const { phone_number } = req.body
-        let phone = await Format_phone_number(phone_number);
-        const user: any = await User.findOne({ phone_number: phone });  // Find the user by ID
-        if (!user) {
-            res.status(400).json("user not found");
-            return
-        }
-        let activationcode = MakeActivationCode(4)
-        user.activationCode = activationcode
-        await user.save();
-
-        res.status(200).json(`Token sent to ***********${phone.slice(-3)}`);
-        return;
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: "Server error", error });
-        return;
-
-    }
-}
 
 // User Login
 export const login = async (req: Request, res: Response) => {
@@ -241,9 +281,9 @@ export const session_Check = async (req: Request, res: Response) => {
 
 export const Bulk = async (req: Request, res: Response): Promise<void> => {
     try {
-       
+
         const { users } = req.body;
-      
+
         if (!users || !Array.isArray(users)) {
             res.status(400).json({
                 success: false,

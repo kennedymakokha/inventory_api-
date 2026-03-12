@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {  Create, Get, Trash, Update,  } from "../controllers/business.controller";
+import { Create, Get, Get_one, Trash, Update, } from "../controllers/business.controller";
 
 const router = Router();
 
@@ -9,7 +9,7 @@ router.get("/", Get);
 router.post("/", Create);
 router.put("/:id", Update);
 router.delete("/:id", Trash);
-// router.get("/:id", Get_one);
+router.get("/my-business", Get_one);
 
 
 export default router;
