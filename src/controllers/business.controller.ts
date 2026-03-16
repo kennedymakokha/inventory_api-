@@ -7,6 +7,7 @@ import { Format_phone_number } from "../utils/simplefunctions.util";
 import { MakeActivationCode } from "../utils/generate_activation.util";
 import { User } from "../models/user.model";
 import bcrypt from "bcryptjs";
+import { getSocketIo } from "../config/socket";
 
 export const Create = async (req: Request | any, res: Response): Promise<void> => {
     try {
@@ -86,16 +87,40 @@ export const Get_one = async (req: Request | any, res: Response | any) => {
 
     }
 };
-
-export const Update:any = async (req: Request | any, res: Response | any) => {
+export const Update = async (req: Request | any, res: Response | any) => {
     try {
-        let updates: any = await BusinessModel.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true, useFindAndModify: false })
-        res.status(200).json(updates._id)
-        return
+        const { id } = req.params;
+
+        const existing = await BusinessModel.findById(id);
+
+        if (!existing) {
+            return res.status(404).json({ message: "Business not found" });
+        }
+
+        const existingObj = existing.toObject() as Record<string, any>;
+
+        const hasChanges = Object.entries(req.body).some(
+            ([key, value]) => String(existingObj[key]) !== String(value)
+        );
+
+        if (!hasChanges) {
+            return res.status(200).json({ message: "No changes detected", id });
+        }
+
+        const updates = await BusinessModel.findOneAndUpdate(
+            { _id: id },
+            req.body,
+            { new: true }
+        );
+
+        const io = getSocketIo();
+        io?.emit("notification", updates);
+
+        res.status(200).json(updates);
+
     } catch (error) {
-        console.log(error)
-        res.status(400).json(error)
-        return
+        console.error(error);
+        res.status(400).json(error);
     }
 };
 export const Trash = async (req: Request | any, res: Response | any) => {

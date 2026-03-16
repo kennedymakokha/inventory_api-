@@ -10,11 +10,11 @@ export const Bulk = async (req: Request | any, res: Response | any) => {
     try {
         const { payments } = req.body;
         const savedRegistration: any[] = [];
-
+        
         for (const item of payments) {
             const { sale_id } = item;
             const sale: any = await Sales.findOne({ sale_id });
-
+          
             // CREATE
             const newPay = new PaymentModel({
                 ...item,

@@ -226,7 +226,7 @@ export const login = async (req: Request, res: Response) => {
                 { phone_number: phone_number },
                 { phone_number: phone }
             ]
-        }).select("phone_number name username role activated password business").populate('business', 'business_name postal_address phone_number contact_number kra_pin api_key');
+        }).select("phone_number name username role activated password business").populate('business', 'business_name latitude longitude postal_address phone_number contact_number kra_pin api_key');
 
         if (!userExists) {
             res.status(400).json("User Not Found")

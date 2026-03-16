@@ -59,37 +59,61 @@ export const Get = async (req: Request | any, res: Response | any) => {
 export const Bulk = async (req: Request | any, res: Response | any) => {
     try {
         const { products } = req.body;
-        console.log(products[0])
         const savedProducts = [];
 
         for (let item of products) {
-            const { product_id, category_tb } = item;
-            const category: any = await categoryModel.findOne({ category_tb });
+            try {
+                const { product_id, category_tb } = item;
 
-            const exists = await ProductModel.findOne({ product_id });
-            if (exists) continue;
-            const newProduct = new ProductModel({
-                ...item,
-                category: category._id,
-                synced: true,
-                created_at: new Date(item.createdAt),
-                updatedAt: new Date(item.updatedAt)
-            });
-            const saved = await newProduct.save();
-            savedProducts.push(saved);
+                // Find category
+                const category: any = await categoryModel.findOne({ category_tb });
+                if (!category) {
+                    console.log(` Category not found for ${category_tb}, skipping product ${product_id}`);
+                    continue;
+                }
+
+                // Find existing product
+                let product: any = await ProductModel.findOne({ product_id });
+
+                if (product) {
+                    // UPDATE existing product
+                    product = Object.assign(product, {
+                        ...item,
+                        category: category._id,
+                        synced: true,
+                        updatedAt: new Date(item.updatedAt)
+                    });
+                    const updated: any = await product?.save();
+                    savedProducts.push(updated);
+                   
+                } else {
+                    // CREATE new product
+                    const newProduct = new ProductModel({
+                        ...item,
+                        category: category._id,
+                        synced: true,
+                        created_at: new Date(item.createdAt),
+                        updatedAt: new Date(item.updatedAt)
+                    });
+                    const saved = await newProduct.save();
+                    console.log(" Created product:", saved.product_id);
+                    savedProducts.push(saved);
+                }
+            } catch (err: any) {
+                console.log(` Error processing product ${item.product_id}:`, err.message);
+            }
         }
 
         res.status(200).json({ success: true, synced: savedProducts });
     } catch (err: any) {
-        console.log(err);
+        console.log(" Bulk operation failed:", err.message);
         res.status(500).json({ error: err.message });
     }
-
 };
 
 export const UpdatedSince = async (req: Request | any, res: Response | any) => {
     try {
-        console.log("updated", req.query.since)
+
         const since = new Date(req.query.since);
         const updated = await ProductModel.find({ updatedAt: { $gt: since }, business: req.user.business });
 

@@ -21,8 +21,7 @@ import { authenticateToken } from "./middleware/auth.middleware";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from 'cors';
-import next from 'next';
-import path from "path";
+
 
 const dev = process.env.NODE_ENV !== 'production';
 
@@ -34,7 +33,8 @@ const allowedOrigins = [
   "https://marapesa.com",
   "https://smartshop-api.marapesa.com",
   "http://185.113.249.137:3000",
-  "https://api.marapesa.com"
+  "https://api.marapesa.com",
+  "https://84b2-41-209-9-114.ngrok-free.app"
 ];
 
 const io = new IOServer(httpServer, {
