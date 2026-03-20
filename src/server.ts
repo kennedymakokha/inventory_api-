@@ -34,7 +34,7 @@ const allowedOrigins = [
   "https://smartshop-api.marapesa.com",
   "http://185.113.249.137:3000",
   "https://api.marapesa.com",
-  "https://84b2-41-209-9-114.ngrok-free.app"
+  "https://a8d3-41-209-9-121.ngrok-free.app"
 ];
 
 const io = new IOServer(httpServer, {

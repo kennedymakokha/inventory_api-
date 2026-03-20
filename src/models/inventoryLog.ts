@@ -27,10 +27,8 @@ const InventoryLogScema = new mongoose.Schema({
     ref: 'business_tb'
   },
 
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    ref: 'user_tb'
-  },
+  createdBy: String
+
 });
 
 

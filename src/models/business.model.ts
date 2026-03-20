@@ -15,6 +15,9 @@ const businessScema = new mongoose.Schema({
   created_at: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   api_key: { type: String, },
+  primary_color:String,
+  secondary_color:String,
+  
   master_ke: { type: String, default: "k3f9Jq8sT1vQmZ0uLx7Y2pV+5A1bF4Hq0r9N2wT+6GQ=" },
   createdBy: {
     type: Schema.Types.ObjectId,

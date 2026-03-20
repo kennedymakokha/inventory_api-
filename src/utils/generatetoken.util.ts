@@ -7,6 +7,7 @@ interface UserPayload {
     username: string;
     role: string;
     name: string;
+    user_id: string;
     business: { _id: string };
 }
 
@@ -17,6 +18,7 @@ const generateTokens = (user: UserPayload, accessExpiry: string) => {
     const accessToken = jwt.sign(
         {
             userId: user._id,
+            user_id: user.user_id,
             username: user.name,
             role: user.role,
             name: user.name,
