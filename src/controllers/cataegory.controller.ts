@@ -58,6 +58,7 @@ export const Get = async (req: Request | any, res: Response | any) => {
 export const Bulk = async (req: Request | any, res: Response | any) => {
     try {
         const { categories } = req.body;
+        console.log(categories)
         const savedcategories: any[] = [];
 
         for (const item of categories) {

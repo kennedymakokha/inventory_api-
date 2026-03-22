@@ -8,40 +8,87 @@ import { MakeActivationCode } from "../utils/generate_activation.util";
 import { User } from "../models/user.model";
 import bcrypt from "bcryptjs";
 import { getSocketIo } from "../config/socket";
+import { v4 as uuidv4 } from "uuid";
+import fs from "fs";
+import path from "path";
+import mongoose from "mongoose";
 
 export const Create = async (req: Request | any, res: Response): Promise<void> => {
-    try {
+    // Start the session for the transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    console.log("oneTerm")
+    const file = req.file;
+    if (!file) {
+        res.status(400).json({ message: "Kindly upload the logo" });
+        return;
+    }
 
-        await CustomError(validateBusinessInput, req.body, res)
-        let phone = await Format_phone_number(req.body.phone_number); //format the phone number
+    try {
+        const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+        req.body.logo = imageUrl;
+
+        // Validation
+        await CustomError(validateBusinessInput, req.body, res);
+
+        let phone = await Format_phone_number(req.body.phone_number);
         req.body.phone_number = phone;
-        const Exists: any = await BusinessModel.findOne({ business_name: req.body.business_name });
+
+        // Check for existing business
+        const Exists = await BusinessModel.findOne({ business_name: req.body.business_name }).session(session);
         if (Exists) {
-            res.status(400).json("business exists already Exists")
-            return
+            throw new Error("BUSINESS_EXISTS");
         }
 
-        req.body.createdBy = req.user.userId
+        req.body.createdBy = req.user.userId;
 
-        const newbusiness: any = new BusinessModel(req.body);
-        let business = await newbusiness.save();
+        // 1. Create Business
+        const newbusiness = new BusinessModel(req.body);
+        const business = await newbusiness.save({ session });
+
+        // Prepare Admin User Data
         const salt = await bcrypt.genSalt(10);
+        const adminPassword = await bcrypt.hash(req.body.phone_number, salt);
 
-        req.body.password = await bcrypt.hash(req.body.phone_number, salt);
-        req.body.phone_number = req.body.contact_number
-        req.body.role = "admin"
-        req.body.name = `${req.body.business_name}'s Admin`
-        req.body.business = business._id
-        req.body.activated = true
-        const user: any = new User(req.body);
-        const newUser = await user.save();
-        res.status(201).json({ ok: true, message: "business added  successfully", newbusiness: business });
-        return;
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ ok: false, message: "Server error", error });
-        return;
+        const adminData = {
+            ...req.body,
+            user_id: uuidv4(),
+            password: adminPassword,
+            phone_number: req.body.contact_number,
+            role: "admin",
+            name: `${req.body.business_name}'s Admin`,
+            business: business._id,
+            activated: true
+        };
 
+        // 2. Create User
+        const user = new User(adminData);
+        await user.save({ session });
+
+        // If we reach here, everything is successful
+        await session.commitTransaction();
+        res.status(201).json({ ok: true, message: "Business and Admin added successfully", newbusiness: business });
+
+    } catch (error: any) {
+        // ROLLBACK the database changes
+        await session.abortTransaction();
+
+        // CLEANUP: Delete the uploaded file since the DB record failed
+        const filePath = path.join(__dirname, "../../public/uploads", file.filename);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        console.log("Transaction Error:", error);
+
+        if (error.message === "BUSINESS_EXISTS") {
+            res.status(400).json("Business already exists");
+        } else {
+            res.status(500).json({ ok: false, message: "Server error", error: error.message });
+        }
+    } finally {
+        // End the session
+        session.endSession();
     }
 };
 
@@ -96,23 +143,22 @@ export const Update = async (req: Request | any, res: Response | any) => {
         if (!existing) {
             return res.status(404).json({ message: "Business not found" });
         }
+        // console.log(req.body)
+        // const existingObj = existing.toObject() as Record<string, any>;
 
-        const existingObj = existing.toObject() as Record<string, any>;
+        // const hasChanges = Object.entries(req.body).some(
+        //     ([key, value]) => String(existingObj[key]) !== String(value)
+        // );
 
-        const hasChanges = Object.entries(req.body).some(
-            ([key, value]) => String(existingObj[key]) !== String(value)
-        );
-
-        if (!hasChanges) {
-            return res.status(200).json({ message: "No changes detected", id });
-        }
+        // if (!hasChanges) {
+        //     return res.status(200).json({ message: "No changes detected", id });
+        // }
 
         const updates = await BusinessModel.findOneAndUpdate(
             { _id: id },
             req.body,
             { new: true }
         );
-
         const io = getSocketIo();
         io?.emit("notification", updates);
 

@@ -14,6 +14,10 @@ const PaymentSchema = new mongoose.Schema({
   method: String,
   amount: Number,
   created_at: Date,
+  customer_phone: String,
+  customer_name: String,
+  mpesa_receipt: String,
+  receipt_no: String,
   updatedAt: { type: Date, default: new Date().toISOString() },
 
   business: {

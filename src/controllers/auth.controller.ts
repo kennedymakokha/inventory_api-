@@ -11,6 +11,7 @@ import { parse } from "cookie";
 import { jwtDecode } from "jwt-decode";
 import { MakeActivationCode } from "../utils/generate_activation.util";
 import { sendTextMessage } from "../utils/sms_sender.util";
+import { UserhistoryModel } from "../models/userHistory.model";
 
 
 
@@ -227,7 +228,7 @@ export const login = async (req: Request, res: Response) => {
                 { phone_number: phone }
             ]
         }).select("phone_number user_id name username role activated password business").populate('business');
-     
+
         if (!userExists) {
             res.status(400).json("User Not Found")
             return
@@ -281,59 +282,133 @@ export const session_Check = async (req: Request, res: Response) => {
 
 export const Bulk = async (req: Request, res: Response): Promise<void> => {
     try {
-
         const { users } = req.body;
 
         if (!users || !Array.isArray(users)) {
             res.status(400).json({
                 success: false,
-                message: "Users array is required"
+                message: "Users array is required",
             });
             return;
         }
 
-        const savedRegistration: any[] = [];
+        const processedUsers: any[] = [];
 
         for (const item of users) {
             const { phone_number, business_id } = item;
 
             const phone = await Format_phone_number(phone_number);
 
-            const userExists = await User.findOne({
+            let user = await User.findOne({
                 phone_number: phone,
-                business: business_id
             });
 
-            if (userExists) continue;
+            let now = new Date();
 
-            const activationCode = MakeActivationCode(4);
+            // =====================
+            // CREATE
+            // =====================
+            if (!user) {
+                const activationCode = MakeActivationCode(4);
 
-            const salt = await bcrypt.genSalt(10);
-            const passwordEncrypt = await bcrypt.hash(phone, salt);
+                const salt = await bcrypt.genSalt(10);
+                const passwordEncrypt = await bcrypt.hash(phone, salt);
 
-            const newUser = new User({
-                ...item,
-                business: business_id,
-                password: passwordEncrypt,
-                phone_number: phone,
-                activationCode
-            });
+                const newUser = new User({
+                    ...item,
+                    business: business_id,
+                    password: passwordEncrypt,
+                    phone_number: phone,
+                    activationCode,
+                    activated: false,
+                });
 
-            const saved = await newUser.save();
-            savedRegistration.push(saved);
+                const saved = await newUser.save();
+
+                // ✅ CREATE HISTORY
+                await UserhistoryModel.create({
+                    user: saved._id,
+                    phone_number: phone,
+                    business: business_id,
+                    started_at: now,
+                });
+
+                processedUsers.push(saved);
+                continue;
+            }
+
+            // =====================
+            // UPDATE
+            // =====================
+
+            const previousBusiness = user.business?.toString();
+
+            // If deleted_at exists → force deactivation
+            if (user.deleted_at) {
+                user.activated = false;
+            }
+
+            // If deleted AND not activated → reset password
+            if (user.deleted_at && user.activated === false) {
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(phone, salt);
+                user.activated = true;
+            }
+
+            // =====================
+            // HANDLE BUSINESS CHANGE
+            // =====================
+            if (previousBusiness !== business_id) {
+                // 
+                const activeHistory = await UserhistoryModel.findOne({
+                    user: user._id,
+                    business: previousBusiness,
+                    ended_at: null,
+                });
+
+                if (activeHistory) {
+                    activeHistory.ended_at = now;
+
+                    // Optional: compute duration
+                    if (activeHistory.started_at) {
+                        activeHistory.duration = new Date(
+                            now.getTime() - activeHistory.started_at.getTime()
+                        );
+                    }
+
+                    await activeHistory.save();
+                }
+
+                // 🟢 Create new history
+                await UserhistoryModel.create({
+                    user: user._id,
+                    phone_number: phone,
+                    business: business_id,
+                    started_at: now,
+                });
+            }
+
+            // Always update business
+            user.business = business_id;
+
+            // Update other fields
+            user = Object.assign(user, item);
+
+            const updated = await user?.save();
+            processedUsers.push(updated);
         }
 
         res.status(200).json({
             success: true,
-            total_created: savedRegistration.length,
-            users: savedRegistration
+            total_processed: processedUsers.length,
+            users: processedUsers,
         });
 
     } catch (err: any) {
         console.error(err);
         res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message,
         });
     }
 };

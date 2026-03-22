@@ -26,6 +26,7 @@ const UserSchema = new mongoose.Schema({
   activated: { type: Boolean, default: true },
   password: { type: String, required: true },
   updatedAt: { type: Date, default: new Date().toISOString() },
+  deleted_at: { type: Date, default: null },
 },);
 // UserSchema.pre("save", async function (next) {
 //   if (!this.isModified("password")) return next();

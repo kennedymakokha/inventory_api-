@@ -17,24 +17,26 @@ import RefundRoute from './routes/refunds.route'
 import RefundItemRoute from './routes/refundItems.route'
 import SaleItemRoute from './routes/saleItems.route'
 import CashRoute from './routes/cashierRegistrations.route'
+import BillingRoute from './routes/billingRoutes'
 import { authenticateToken } from "./middleware/auth.middleware";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from 'cors';
-
-
+import path from "path";
+import './crons/monthlybilling'
+import './crons/hourlyBilling'
 const dev = process.env.NODE_ENV !== 'production';
 
 const app = express();
 const httpServer = createServer(app);
 
 const allowedOrigins = [
-  "http://localhost:9000",
+  "http://localhost:3001/",
   "https://marapesa.com",
   "https://smartshop-api.marapesa.com",
   "http://185.113.249.137:3000",
   "https://api.marapesa.com",
-  "https://a8d3-41-209-9-121.ngrok-free.app"
+  "https://5fd3-41-209-9-121.ngrok-free.app"
 ];
 
 const io = new IOServer(httpServer, {
@@ -45,7 +47,7 @@ const io = new IOServer(httpServer, {
     allowedHeaders: ["Content-Type", "Authorization"]
   }
 });
-
+app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -66,6 +68,9 @@ app.use("/api/payments", authenticateToken, PaymentRoute);
 app.use("/api/refunds", authenticateToken, RefundRoute);
 app.use("/api/refund-items", authenticateToken, RefundItemRoute);
 app.use("/api/sales-items", authenticateToken, SaleItemRoute);
+app.use("/api/billings-overview", authenticateToken, BillingRoute);
+
+
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'API endpoint not found' });
 });
