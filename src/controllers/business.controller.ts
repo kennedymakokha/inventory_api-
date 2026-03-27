@@ -7,7 +7,7 @@ import { Format_phone_number } from "../utils/simplefunctions.util";
 import { MakeActivationCode } from "../utils/generate_activation.util";
 import { User } from "../models/user.model";
 import bcrypt from "bcryptjs";
-import { getSocketIo } from "../config/socket";
+import { emitToDevice, getSocketIo } from "../config/socket";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
@@ -143,16 +143,7 @@ export const Update = async (req: Request | any, res: Response | any) => {
         if (!existing) {
             return res.status(404).json({ message: "Business not found" });
         }
-        // console.log(req.body)
-        // const existingObj = existing.toObject() as Record<string, any>;
 
-        // const hasChanges = Object.entries(req.body).some(
-        //     ([key, value]) => String(existingObj[key]) !== String(value)
-        // );
-
-        // if (!hasChanges) {
-        //     return res.status(200).json({ message: "No changes detected", id });
-        // }
 
         const updates = await BusinessModel.findOneAndUpdate(
             { _id: id },
@@ -160,7 +151,7 @@ export const Update = async (req: Request | any, res: Response | any) => {
             { new: true }
         );
         const io = getSocketIo();
-        io?.emit("notification", updates);
+        io?.emit("business:update", updates);
 
         res.status(200).json(updates);
 
@@ -169,10 +160,30 @@ export const Update = async (req: Request | any, res: Response | any) => {
         res.status(400).json(error);
     }
 };
+
+
+
 export const Trash = async (req: Request | any, res: Response | any) => {
     try {
         let deleted: any = await BusinessModel.findOneAndUpdate({ _id: req.params.id }, { deletedAt: Date.now() }, { new: true, useFindAndModify: false })
         res.status(200).json(`${deleted.business_name} deleted successfully`)
+        return
+    } catch (error) {
+        res.status(404).json(error);
+
+        return
+        throw new Error("deletion Failed ")
+    }
+};
+
+export const Lock = async (req: Request | any, res: Response | any) => {
+    const { deviceId, event, payload } = req.body;
+    try {
+        emitToDevice("69b2e33b7df417e9466180e1", "business:update", {
+            primary_color: "#ff0000",
+            secondary_color: "#00ff00",
+            grayscale: true,
+        });
         return
     } catch (error) {
         res.status(404).json(error);

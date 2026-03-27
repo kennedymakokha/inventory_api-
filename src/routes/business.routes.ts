@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Create, Get, Get_one, Trash, Update, } from "../controllers/business.controller";
+import { Create, Get, Get_one, Lock, Trash, Update, } from "../controllers/business.controller";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -30,6 +30,7 @@ router.post("/", upload.single('logo'), Create);
 router.put("/:id", Update);
 router.delete("/:id", Trash);
 router.get("/my-business", Get_one);
+router.post("/lock-business", Lock);
 
 
 export default router;

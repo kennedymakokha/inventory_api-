@@ -18,6 +18,7 @@ import RefundItemRoute from './routes/refundItems.route'
 import SaleItemRoute from './routes/saleItems.route'
 import CashRoute from './routes/cashierRegistrations.route'
 import BillingRoute from './routes/billingRoutes'
+import ClocksRoute from './routes/clocks.route'
 import { authenticateToken } from "./middleware/auth.middleware";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -36,7 +37,7 @@ const allowedOrigins = [
   "https://smartshop-api.marapesa.com",
   "http://185.113.249.137:3000",
   "https://api.marapesa.com",
-  "https://5fd3-41-209-9-121.ngrok-free.app"
+  "https://a899-102-205-188-82.ngrok-free.app"
 ];
 
 const io = new IOServer(httpServer, {
@@ -69,7 +70,7 @@ app.use("/api/refunds", authenticateToken, RefundRoute);
 app.use("/api/refund-items", authenticateToken, RefundItemRoute);
 app.use("/api/sales-items", authenticateToken, SaleItemRoute);
 app.use("/api/billings-overview", authenticateToken, BillingRoute);
-
+app.use("/api/clocks", authenticateToken, ClocksRoute);
 
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'API endpoint not found' });
